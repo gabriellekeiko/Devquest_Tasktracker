@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevQuest - TaskTracker Gamificado</title>
+    
+    <!-- Biblioteca Profissional para Efeitos de Confetes -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Estilo Dark RPG Cyberpunk */
+        :root {
+            --bg-color: #0d0e15;
+            --card-bg: #151824;
+            --text-color: #f0f2f5;
+            --neon-purple: #9d4edd;
+            --neon-cyan: #00f5d4;
+            --neon-pink: #ff007f;
+            --low-priority: #3a86ff;
+            --medium-priority: #ffbe0b;
+            --high-priority: #ff006e;
+            --failed-color: #7209b7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
+            padding: 30px;
+            display: none; 
+        }
+
+        /* Tela de Autenticação */
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.15);
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
+        }
+
+        h2 {
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #8b8f9e;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        /* Inputs e Formulários */
+        input[type="text"], input[type="password"], input[type="datetime-local"], select {
+            width: 100%;
+            box-sizing: border-box;
+            background: #1c2030;
+            border: 1px solid #32384e;
+            color: var(--text-color);
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="datetime-local"]:focus, select:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 8px rgba(0, 245, 212, 0.3);
+        }
+
+        /* Navegação por Abas */
+        .navigation-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #252b41;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #8b8f9e;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 6px 6px 0 0;
+            transition: 0.3s;
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        .tab-btn.active {
+            color: var(--neon-cyan);
+            border-bottom: 3px solid var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Botões */
+        .btn {
+            width: 100%;
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #00d2b4;
+            box-shadow: 0 0 12px rgba(0, 245, 212, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--neon-purple);
+            border: 2px solid var(--neon-purple);
+            margin-top: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--neon-purple);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.3);
+        }
+
+        .header-dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #252b41;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Perfil do Usuário e Barra de XP */
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+        }
+
+        .level-badge {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 245, 212, 0.3);
+        }
+
+        .xp-bar-container {
+            background: #1c2030;
+            border-radius: 20px;
+            height: 20px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #32384e;
+        }
+
+        .xp-bar-fill {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        /* Formulário de Edição de Perfil */
+        .edit-profile-form {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #252b41;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none; 
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid var(--neon-purple);
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.1);
+        }
+
+        .edit-profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Grid de Conquistas */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .achievements-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .achievements-grid::-webkit-scrollbar-thumb {
+            background-color: var(--neon-purple);
+            border-radius: 4px;
+        }
+
+        .achievement-card {
+            background: #1c2030;
+            border: 1px solid #252b41;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.75rem;
+            transition: 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .achievement-card.locked {
+            filter: grayscale(1);
+            opacity: 0.2;
+        }
+
+        .achievement-card.unlocked {
+            filter: none;
+            opacity: 1;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 8px rgba(0, 245, 212, 0.3);
+            background: rgba(0, 245, 212, 0.05);
+        }
+
+        .achievement-icon {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        /* Cadastro de Tarefas */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        /* Itens de Missão */
+        .quest-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .quest-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #252b41;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .quest-item:hover {
+            border-color: rgba(157, 78, 221, 0.4);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .quest-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .quest-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .quest-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge-priority {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .priority-baixa { background: rgba(58, 134, 255, 0.15); color: var(--low-priority); }
+        .priority-media { background: rgba(255, 190, 11, 0.15); color: var(--medium-priority); }
+        .priority-alta { background: rgba(255, 0, 110, 0.15); color: var(--high-priority); }
+
+        .badge-type {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            background: rgba(157, 78, 221, 0.15);
+            color: var(--neon-purple);
+            border: 1px solid var(--neon-purple);
+        }
+
+        .badge-xp {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .quest-deadline {
+            color: #ffbe0b;
+            font-size: 0.8rem;
+        }
+
+        .btn-complete {
+            background: transparent;
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-purple);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-complete:hover {
+            background: var(--neon-purple);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+        }
+
+        /* Status Concluída e Falhada */
+        .quest-completed {
+            opacity: 0.5;
+            background: rgba(0, 0, 0, 0.3);
+            border-color: #1e2435;
+        }
+
+        .quest-completed .quest-title {
+            text-decoration: line-through;
+            color: #8b8f9e;
+        }
+
+        .quest-failed {
+            border-color: rgba(255, 0, 110, 0.3);
+            background: rgba(255, 0, 110, 0.03);
+        }
+
+        .quest-failed .quest-title {
+            color: #ff006e;
+            text-decoration: line-through;
+        }
+
+        .badge-status-completed {
+            background: rgba(0, 245, 212, 0.15);
+            color: var(--neon-cyan);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .badge-status-failed {
+            background: rgba(255, 0, 110, 0.15);
+            color: var(--high-priority);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- TELA DE AUTENTICAÇÃO -->
+<div class="auth-container" id="auth-panel">
+    <h1>DevQuest</h1>
+    <p class="subtitle">TaskTracker Gamificado</p>
+    
+    <h2 id="auth-title">Acessar Portal</h2>
+    
+    <div class="input-group" style="margin-bottom: 15px; text-align: left;">
+        <label for="username" style="display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b8f9e; text-transform: uppercase;">Nome de Usuário (Login)</label>
+        <input type="text" id="username" placeholder="Seu apelido de player...">
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 15px; text-align: left;">
+        <label for="password" style="display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8b8f9e; text-transform: uppercase;">Senha de Acesso</label>
+        <input type="password" id="password" placeholder="Sua senha secreta...">
+    </div>
+    
+    <button class="btn" id="btn-primary-auth" onclick="processarAutenticacao()">Entrar na Jornada</button>
+    <button class="btn btn-secondary" id="btn-switch-auth" onclick="alternarModoAuth()">Criar Nova Conta</button>
+</div>
+
+<!-- PAINEL DO JOGADOR -->
+<div class="container" id="main-panel">
+    <div class="header-dashboard">
+        <!-- Mostrador dinâmico global no cabeçalho -->
+        <div class="user-welcome" style="font-weight: bold; font-size: 0.95rem;">
+            Player: <span id="display-username" style="color: var(--neon-cyan);">Player</span> 
+            | <span id="header-level" style="color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple);">Nível 1</span> 
+            (<span id="xp-total" style="color: var(--neon-cyan);">0 XP</span>)
+        </div>
+        
+        <!-- Ferramentas de Backup JSON e Logout -->
+        <div style="display: flex; gap: 8px;">
+            <button onclick="exportarBackup()" style="background: rgba(0, 245, 212, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem;" title="Exportar Backup JSON">💾 Exportar</button>
+            <button onclick="document.getElementById('import-file').click()" style="background: rgba(157, 78, 221, 0.1); color: var(--neon-purple); border: 1px solid var(--neon-purple); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem;" title="Importar Backup JSON">📂 Importar</button>
+            <input type="file" id="import-file" onchange="importarBackup(event)" accept=".json" style="display: none;">
+            <button style="background: rgba(255, 0, 110, 0.1); color: var(--neon-pink); border: 1px solid var(--neon-pink); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem;" onclick="fazerLogout()">Sair</button>
+        </div>
+    </div>
+
+    <!-- Abas de Navegação -->
+    <div class="navigation-tabs">
+        <button class="tab-btn active" id="tab-quests" onclick="mudarAba('quests')">⚔️ Missões</button>
+        <button class="tab-btn" id="tab-profile" onclick="mudarAba('profile')">👤 Perfil & Conquistas</button>
+    </div>
+
+    <!-- ABA 1: MISSÕES -->
+    <div class="tab-content active" id="content-quests">
+        <!-- Cadastro de Tarefas -->
+        <div class="form-group">
+            <input type="text" id="quest-title" placeholder="Digite o título da sua missão (Ex: Refatorar Código)...">
+            <div class="form-row">
+                <select id="quest-priority" style="flex: 1;">
+                    <option value="">Prioridade</option>
+                    <option value="Baixa">Baixa (10 XP)</option>
+                    <option value="Média">Média (25 XP)</option>
+                    <option value="Alta">Alta (50 XP)</option>
+                </select>
+                <select id="quest-type" style="flex: 1;">
+                    <option value="comum">Quest Única (Comum)</option>
+                    <option value="diaria">⚡ Diária (Repetível)</option>
+                    <option value="semanal">📅 Semanal (Repetível)</option>
+                </select>
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <input type="datetime-local" id="quest-deadline">
+                </div>
+            </div>
+            <button class="btn btn-add" style="margin: 0;" onclick="cadastrarMissao()">Iniciar Quest</button>
+        </div>
+
+        <!-- Ordenação -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #252b41; padding-bottom: 10px; margin-bottom: 15px; margin-top: 15px;">
+            <h3 style="margin: 0;">Suas Quests Ativas</h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="sort-quests" style="font-size: 0.8rem; color: #8b8f9e; text-transform: uppercase; font-weight: bold;">Ordenar por:</label>
+                <select id="sort-quests" onchange="renderizarMissoes()" style="width: auto; padding: 6px 12px; font-size: 0.85rem; background: #1c2030; border: 1px solid #252b41; border-radius: 4px; color: var(--text-color); cursor: pointer;">
+                    <option value="recentes">Mais Recentes</option>
+                    <option value="prioridade-dec">Maior Prioridade ⚔️</option>
+                    <option value="prioridade-asc">Menor Prioridade 🛡️</option>
+                    <option value="deadline-urgente">Prazo mais Urgente ⏱️</option>
+                    <option value="deadline-distante">Prazo mais Distante ⏳</option>
+                    <option value="status">Status (Pendentes primeiro) 🔄</option>
+                </select>
+            </div>
+        </div>
+
+        <ul class="quest-list" id="quest-list">
+            <!-- Inseridas dinamicamente -->
+        </ul>
+    </div>
+
+    <!-- ABA 2: PERFIL & CONQUISTAS -->
+    <div class="tab-content" id="content-profile">
+        <div class="profile-container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h2 id="profile-display-name" style="margin: 0; color: var(--neon-cyan);">Jogador</h2>
+                    
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.95rem;">
+                        <div>🎂 Idade: <span id="profile-display-age" style="color: #fff; font-weight: bold;">Não informada</span></div>
+                        <div>📧 E-mail: <span id="profile-display-email" style="color: #fff;">Não informado</span></div>
+                        <div>💼 Curso / Área de Trabalho: <span id="profile-display-course" style="color: var(--neon-purple); font-weight: bold;">Recruta em Treinamento</span></div>
+                    </div>
+                </div>
+                <div class="level-badge" id="profile-level">Nível 1</div>
+            </div>
+
+            <!-- Barra de XP -->
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                    <span>Experiência (XP): <strong id="profile-xp-text" style="color: var(--neon-cyan);">0 / 200 XP</strong></span>
+                    <span id="profile-total-xp-text" style="color: var(--neon-purple);">Total: 0 XP</span>
+                </div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="xp-bar"></div>
+                </div>
+            </div>
+
+            <!-- Botão de Toggle do Perfil -->
+            <button class="btn btn-secondary" id="btn-toggle-edit-profile" onclick="toggleEditProfile()" style="margin-top: 10px; margin-bottom: 5px;">✏️ Personalizar Perfil</button>
+
+            <!-- Formulário Editável Retrátil -->
+            <div class="edit-profile-form" id="edit-profile-area">
+                <span style="font-size: 0.85rem; font-weight: bold; color: var(--neon-cyan); text-transform: uppercase;">📝 Personalizar Dados do Player (Opcional)</span>
+                <div class="edit-profile-grid">
+                    <input type="text" id="edit-fullname" placeholder="Nome Completo">
+                    <input type="text" id="edit-age" placeholder="Idade (Ex: 21 anos)">
+                </div>
+                <div class="edit-profile-grid">
+                    <input type="text" id="edit-email" placeholder="E-mail de Contato">
+                    <input type="text" id="edit-course" placeholder="Curso ou Área de Trabalho">
+                </div>
+                <button class="btn" style="padding: 10px; margin: 0; font-size: 0.85rem;" onclick="salvarInformacoesPerfil()">Salvar Alterações</button>
+            </div>
+
+            <!-- Galeria de Conquistas -->
+            <h3 style="border-bottom: 1px solid #252b41; padding-bottom: 10px; margin: 15px 0 0 0; color: var(--neon-cyan); font-size: 1.1rem; text-transform: uppercase;">
+                🏆 Conquistas Desbloqueadas (<span id="achievements-count">0/115</span>)
+            </h3>
+            <div class="achievements-grid" id="achievements-list">
+                <!-- Geradas dinamicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let modoCadastro = false; 
+    let editingQuestId = null; 
+
+    // 🌐 CONEXÃO COM A SUA API DO RENDER (Adicione estas linhas)
+    // Substitua o link abaixo pela URL real que o Render gerou para você!
+    const API_URL = "https://devquest-api-r12y.onrender.com"; 
+
+    async function sincronizarComANuvem() {
+        if (!currentUser) return;
+        
+        const payload = {
+            username: currentUser,
+            profile: JSON.parse(localStorage.getItem(`devquest_profile_${currentUser}`)) || {},
+            stats: JSON.parse(localStorage.getItem(`devquest_stats_${currentUser}`)) || {},
+            missoes: JSON.parse(localStorage.getItem(`devquest_missoes_${currentUser}`)) || [],
+            xp: parseInt(localStorage.getItem(`devquest_xp_${currentUser}`)) || 0
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/api/backup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+            const resultado = await response.json();
+            console.log("Sincronização Segura ativa:", resultado.mensagem);
+        } catch (error) {
+            console.error("Falha ao salvar dados na nuvem com segurança:", error);
+        }
+    }
+
+    // Síntese de Áudio Retrô de 8-Bits (Web Audio API)
+    let audioCtx = null;
+
+    function inicializarAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function tocarSomSucesso() {
+        inicializarAudio();
+        if (!audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'square';
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(523.25, now); 
+        osc.frequency.setValueAtTime(659.25, now + 0.1); 
+        osc.frequency.setValueAtTime(783.99, now + 0.2); 
+        osc.frequency.setValueAtTime(1046.50, now + 0.3); 
+        
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        
+        osc.start(now);
+        osc.stop(now + 0.45);
+    }
+
+    function tocarSomFalha() {
+        inicializarAudio();
+        if (!audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sawtooth';
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(220.00, now); 
+        osc.frequency.linearRampToValueAtTime(110.00, now + 0.35); 
+        
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc.start(now);
+        osc.stop(now + 0.4);
+    }
+
+    function tocarSomLevelUp() {
+        inicializarAudio();
+        if (!audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'triangle';
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(261.63, now); 
+        osc.frequency.setValueAtTime(329.63, now + 0.08); 
+        osc.frequency.setValueAtTime(392.00, now + 0.16); 
+        osc.frequency.setValueAtTime(523.25, now + 0.24); 
+        osc.frequency.setValueAtTime(659.25, now + 0.32); 
+        osc.frequency.setValueAtTime(783.99, now + 0.40); 
+        osc.frequency.setValueAtTime(1046.50, now + 0.48); 
+        
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+        
+        osc.start(now);
+        osc.stop(now + 0.65);
+    }
+
+    function celebrarConclusao() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 80,
+                spread: 60,
+                origin: { y: 0.7 },
+                colors: ['#00f5d4', '#9d4edd', '#ff007f']
+            });
+        }
+    }
+
+    async function hashSenha(senha) {
+        const msgUint8 = new TextEncoder().encode(senha);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+
+    // EXPORTAR BACKUP JSON (PRODUÇÃO)
+    function exportarBackup() {
+        if (!currentUser) return;
+        const backupData = {
+            username: currentUser,
+            profile: JSON.parse(localStorage.getItem(`devquest_profile_${currentUser}`)) || {},
+            stats: JSON.parse(localStorage.getItem(`devquest_stats_${currentUser}`)) || {},
+            missoes: JSON.parse(localStorage.getItem(`devquest_missoes_${currentUser}`)) || [],
+            xp: parseInt(localStorage.getItem(`devquest_xp_${currentUser}`)) || 0,
+            exportedAt: new Date().toISOString()
+        };
+
+        const jsonStr = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `devquest_backup_${currentUser}_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // IMPORTAR BACKUP JSON (PRODUÇÃO)
+    function importarBackup(event) {
+        const file = event.target.files;
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data.username || !Array.isArray(data.missoes)) {
+                    throw new Error("Formato de backup inválido.");
+                }
+
+                const aceita = confirm(`Deseja importar o backup do usuário '${data.username}'? Isso substituirá as informações locais deste perfil.`);
+                if (!aceita) return;
+
+                currentUser = data.username;
+                sessionStorage.setItem('devquest_session_user', currentUser);
+                
+                // Salva tudo no LocalStorage
+                localStorage.setItem(`devquest_profile_${currentUser}`, JSON.stringify(data.profile));
+                localStorage.setItem(`devquest_stats_${currentUser}`, JSON.stringify(data.stats));
+                localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(data.missoes));
+                localStorage.setItem(`devquest_xp_${currentUser}`, data.xp);
+
+                // Garante que o usuário esteja registrado no banco global de logins
+                let registeredUsers = JSON.parse(localStorage.getItem('devquest_registered_users')) || [];
+                if (!registeredUsers.some(u => u.username.toLowerCase() === currentUser.toLowerCase())) {
+                    registeredUsers.push({ username: currentUser, password: "" });
+                    localStorage.setItem('devquest_registered_users', JSON.stringify(registeredUsers));
+                }
+
+                alert("Backup restaurado e sincronizado com sucesso!");
+                carregarDashboardUsuario();
+            } catch (err) {
+                alert("Erro ao importar backup: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    window.onload = function() {
+        const userSalvo = sessionStorage.getItem('devquest_session_user');
+        if (userSalvo) {
+            currentUser = userSalvo;
+            carregarDashboardUsuario();
+        }
+        
+        setInterval(verificarDeadlinesExpiradas, 10000);
+    };
+
+    function mudarAba(aba) {
+        document.getElementById('tab-quests').classList.remove('active');
+        document.getElementById('tab-profile').classList.remove('active');
+        document.getElementById('content-quests').classList.remove('active');
+        document.getElementById('content-profile').classList.remove('active');
+
+        if (aba === 'quests') {
+            document.getElementById('tab-quests').classList.add('active');
+            document.getElementById('content-quests').classList.add('active');
+            renderizarMissoes();
+        } else {
+            document.getElementById('tab-profile').classList.add('active');
+            document.getElementById('content-profile').classList.add('active');
+            carregarCamposEdicaoPerfil();
+            renderizarPerfil();
+        }
+    }
+
+    function alternarModoAuth() {
+        modoCadastro = !modoCadastro;
+        const authTitle = document.getElementById('auth-title');
+        const btnPrimary = document.getElementById('btn-primary-auth');
+        const btnSwitch = document.getElementById('btn-switch-auth');
+
+        if (modoCadastro) {
+            authTitle.innerText = "Criar Nova Conta";
+            btnPrimary.innerText = "Registrar Jogador";
+            btnSwitch.innerText = "Já tenho uma conta (Fazer Login)";
+        } else {
+            authTitle.innerText = "Acessar Portal";
+            btnPrimary.innerText = "Entrar na Jornada";
+            btnSwitch.innerText = "Criar Nova Conta";
+        }
+    }
+
+    async function processarAutenticacao() {
+        inicializarAudio();
+        const usernameInput = document.getElementById('username').value.trim();
+        const passwordInput = document.getElementById('password').value.trim();
+
+        if (usernameInput === "" || passwordInput === "") {
+            alert("Erro: Preencha todos os campos para prosseguir.");
+            return;
+        }
+
+        let usuariosRegistrados = JSON.parse(localStorage.getItem('devquest_registered_users')) || [];
+
+        if (modoCadastro) {
+            const usuarioExiste = usuariosRegistrados.some(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+            if (usuarioExiste) {
+                alert("Erro: Este nome de usuário já está sendo usado.");
+                return;
+            }
+
+            const hashedPassword = await hashSenha(passwordInput);
+            usuariosRegistrados.push({ username: usernameInput, password: hashedPassword });
+            localStorage.setItem('devquest_registered_users', JSON.stringify(usuariosRegistrados));
+            
+            inicializarEstatisticasNovoUsuario(usernameInput);
+
+            alert("Sucesso! Conta criada com êxito. Faça o seu login!");
+            alternarModoAuth();
+        } else {
+            const hashedInputPw = await hashSenha(passwordInput);
+            const usuarioValido = usuariosRegistrados.find(u => u.username.toLowerCase() === usernameInput.toLowerCase() && u.password === hashedInputPw);
+            
+            if (usuarioValido) {
+                currentUser = usuarioValido.username;
+                sessionStorage.setItem('devquest_session_user', currentUser);
+                carregarDashboardUsuario();
+            } else {
+                alert("Erro: Nome de usuário ou senha incorretos.");
+            }
+        }
+    }
+
+    function inicializarEstatisticasNovoUsuario(user) {
+        const stats = {
+            totalCompletas: 0,
+            totalFalhas: 0,
+            sequenciaAtual: 0,
+            altaPrioridadeConcluidas: 0,
+            mediaPrioridadeConcluidas: 0,
+            baixaPrioridadeConcluidas: 0,
+            clutchConclusoes: 0,
+            superClutchConclusoes: 0
+        };
+        localStorage.setItem(`devquest_stats_${user}`, JSON.stringify(stats));
+    }
+
+    function obterEstatisticasUsuario() {
+        let stats = JSON.parse(localStorage.getItem(`devquest_stats_${currentUser}`));
+        if (!stats) {
+            stats = {
+                totalCompletas: 0,
+                totalFalhas: 0,
+                sequenciaAtual: 0,
+                altaPrioridadeConcluidas: 0,
+                mediaPrioridadeConcluidas: 0,
+                baixaPrioridadeConcluidas: 0,
+                clutchConclusoes: 0,
+                superClutchConclusoes: 0
+            };
+            let lista = obterMissoesDoUsuario();
+            stats.totalCompletas = lista.filter(m => m.status === "Concluída").length;
+            stats.totalFalhas = lista.filter(m => m.status === "Falhada").length;
+            stats.altaPrioridadeConcluidas = lista.filter(m => m.status === "Concluída" && m.prioridade === "Alta").length;
+            stats.mediaPrioridadeConcluidas = lista.filter(m => m.status === "Concluída" && m.prioridade === "Média").length;
+            stats.baixaPrioridadeConcluidas = lista.filter(m => m.status === "Concluída" && m.prioridade === "Baixa").length;
+            localStorage.setItem(`devquest_stats_${currentUser}`, JSON.stringify(stats));
+        }
+        return stats;
+    }
+
+    function salvarEstatisticasUsuario(stats) {
+        localStorage.setItem(`devquest_stats_${currentUser}`, JSON.stringify(stats));
+    }
+
+    function carregarDashboardUsuario() {
+        document.getElementById('auth-panel').style.display = 'none';
+        document.getElementById('main-panel').style.display = 'block';
+        document.getElementById('display-username').innerText = currentUser;
+
+        document.getElementById('username').value = "";
+        document.getElementById('password').value = "";
+
+        atualizarHeaderXp();
+        verificarDeadlinesExpiradas();
+        renderizarMissoes();
+    }
+
+    function fazerLogout() {
+        sessionStorage.removeItem('devquest_session_user');
+        currentUser = null;
+        document.getElementById('main-panel').style.display = 'none';
+        document.getElementById('auth-panel').style.display = 'block';
+    }
+
+    function verificarResetsRepetiveis(lista) {
+        let alterado = false;
+        const agora = new Date();
+
+        lista.forEach(missao => {
+            if (missao.status === "Concluída" && missao.tipo && missao.tipo !== "comum" && missao.ultimaConclusao) {
+                const dataConclusao = new Date(missao.ultimaConclusao);
+                
+                if (missao.tipo === "diaria") {
+                    if (agora.getDate() !== dataConclusao.getDate() || 
+                        agora.getMonth() !== dataConclusao.getMonth() || 
+                        agora.getFullYear() !== dataConclusao.getFullYear()) {
+                        
+                        missao.status = "Pendente";
+                        delete missao.ultimaConclusao;
+                        alterado = true;
+                    }
+                } else if (missao.tipo === "semanal") {
+                    const diffTempo = Math.abs(agora - dataConclusao);
+                    const diffDias = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
+                    if (diffDias >= 7) {
+                        missao.status = "Pendente";
+                        delete missao.ultimaConclusao;
+                        alterado = true;
+                    }
+                }
+            }
+        });
+
+        if (alterado) {
+            localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+        }
+        return lista;
+    }
+
+    function obterMissoesDoUsuario() {
+        let lista = JSON.parse(localStorage.getItem(`devquest_missoes_${currentUser}`)) || [];
+        let alterado = false;
+        
+        lista.forEach(missao => {
+            if (!missao.id) {
+                missao.id = Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+                alterado = true;
+            }
+            if (!missao.tipo) {
+                missao.tipo = "comum";
+                alterado = true;
+            }
+        });
+
+        if (alterado) {
+            localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+        }
+
+        lista = verificarResetsRepetiveis(lista);
+        return lista;
+    }
+
+    function obterXpDoUsuario() {
+        return parseInt(localStorage.getItem(`devquest_xp_${currentUser}`)) || 0;
+    }
+
+    function atualizarHeaderXp() {
+        const totalXP = obterXpDoUsuario();
+        const nivelAtual = Math.floor(totalXP / 200) + 1;
+        document.getElementById('header-level').innerText = `Nível ${nivelAtual}`;
+        document.getElementById('xp-total').innerText = `${totalXP} XP`;
+    }
+
+    function carapanelToggle(show) {
+        const form = document.getElementById('edit-profile-area');
+        const btn = document.getElementById('btn-toggle-edit-profile');
+        if (show) {
+            form.style.display = 'flex';
+            btn.innerHTML = '❌ Cancelar Edição';
+        } else {
+            form.style.display = 'none';
+            btn.innerHTML = '✏️ Personalizar Perfil';
+        }
+    }
+
+    function toggleEditProfile() {
+        const form = document.getElementById('edit-profile-area');
+        if (form.style.display === 'none' || form.style.display === '') {
+            carapanelToggle(true);
+        } else {
+            carapanelToggle(false);
+        }
+    }
+
+    function carregarCamposEdicaoPerfil() {
+        const perfilSalvo = JSON.parse(localStorage.getItem(`devquest_profile_${currentUser}`)) || {};
+        document.getElementById('edit-fullname').value = perfilSalvo.fullname || "";
+        document.getElementById('edit-age').value = perfilSalvo.age || "";
+        document.getElementById('edit-email').value = perfilSalvo.email || "";
+        document.getElementById('edit-course').value = perfilSalvo.course || "";
+    }
+
+    function salvarInformacoesPerfil() {
+        inicializarAudio();
+        const fullname = document.getElementById('edit-fullname').value.trim();
+        const age = document.getElementById('edit-age').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+        const course = document.getElementById('edit-course').value.trim();
+
+        const perfil = {
+            fullname: fullname,
+            age: age,
+            email: email,
+            course: course
+        };
+
+        localStorage.setItem(`devquest_profile_${currentUser}`, JSON.stringify(perfil));
+        tocarSomSucesso();
+        alert("Perfil atualizado com sucesso!");
+        carapanelToggle(false); 
+        renderizarPerfil();
+        sincronizarComANuvem();
+    }
+
+    function cadastrarMissao() {
+        inicializarAudio();
+        const tituloInput = document.getElementById('quest-title');
+        const prioridadeSelect = document.getElementById('quest-priority');
+        const tipoSelect = document.getElementById('quest-type');
+        const deadlineInput = document.getElementById('quest-deadline');
+
+        const titulo = tituloInput.value.trim();
+        const prioridade = prioridadeSelect.value;
+        const tipo = tipoSelect.value;
+        const deadlineValue = deadlineInput.value;
+
+        if (titulo === "") {
+            alert("Erro: O título da missão é obrigatório.");
+            return;
+        }
+
+        if (prioridade === "") {
+            alert("Erro: Por favor, selecione uma prioridade.");
+            return;
+        }
+
+        if (deadlineValue === "") {
+            alert("Erro: É obrigatório definir um prazo de expiração.");
+            return;
+        }
+
+        const dataDeadline = new Date(deadlineValue);
+        if (dataDeadline <= new Date()) {
+            alert("Erro: O prazo limite da missão deve ser uma data futura!");
+            return;
+        }
+
+        let xpCalculado = 0;
+        if (prioridade === "Baixa") xpCalculado = 10;
+        else if (prioridade === "Média") xpCalculado = 25;
+        else if (prioridade === "Alta") xpCalculado = 50;
+
+        const novaMissao = {
+            id: Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+            titulo: titulo,
+            prioridade: prioridade,
+            tipo: tipo,
+            xp: xpCalculado,
+            status: "Pendente",
+            deadline: deadlineValue
+        };
+
+        let lista = obterMissoesDoUsuario();
+        lista.push(novaMissao);
+
+        localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+
+        tituloInput.value = "";
+        prioridadeSelect.value = "";
+        tipoSelect.value = "comum";
+        deadlineInput.value = "";
+
+        tocarSomSucesso();
+        renderizarMissoes();
+        sincronizarComANuvem();
+    }
+
+    function iniciarEdicao(id) {
+        editingQuestId = id;
+        renderizarMissoes();
+    }
+
+    function cancelarEdicao() {
+        editingQuestId = null;
+        renderizarMissoes();
+    }
+
+    function salvarEdicao(id) {
+        inicializarAudio();
+        const novoTitulo = document.getElementById(`edit-title-${id}`).value.trim();
+        const novaPrioridade = document.getElementById(`edit-priority-${id}`).value;
+        const novoTipo = document.getElementById(`edit-type-${id}`).value;
+        const novaDeadline = document.getElementById(`edit-deadline-${id}`).value;
+
+        if (novoTitulo === "" || novaPrioridade === "" || novaDeadline === "") {
+            alert("Erro: Todos os campos são obrigatórios.");
+            return;
+        }
+
+        const dataDeadline = new Date(novaDeadline);
+        if (dataDeadline <= new Date()) {
+            alert("Erro: O prazo limite deve ser uma data futura!");
+            return;
+        }
+
+        let lista = obterMissoesDoUsuario();
+        const index = lista.findIndex(m => m.id === id);
+
+        if (index !== -1) {
+            let missao = lista[index];
+            missao.titulo = novoTitulo;
+            missao.prioridade = novaPrioridade;
+            missao.tipo = novoTipo;
+            missao.deadline = novaDeadline;
+
+            let xpCalculado = 0;
+            if (novaPrioridade === "Baixa") xpCalculado = 10;
+            else if (novaPrioridade === "Média") xpCalculado = 25;
+            else if (novaPrioridade === "Alta") xpCalculado = 50;
+            missao.xp = xpCalculado;
+
+            localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+            editingQuestId = null;
+            tocarSomSucesso();
+            renderizarMissoes();
+        }
+    }
+
+    function excluirMissao(id) {
+        inicializarAudio();
+        if (confirm("Deseja realmente excluir esta missão? Se concluída ou falhada, seu XP e estatísticas serão recalculados.")) {
+            let lista = obterMissoesDoUsuario();
+            let xpAcumulado = obterXpDoUsuario();
+            let stats = obterEstatisticasUsuario();
+
+            const index = lista.findIndex(m => m.id === id);
+            if (index !== -1) {
+                const missao = lista[index];
+                
+                if (missao.status === "Concluída") {
+                    xpAcumulado -= missao.xp;
+                    if (xpAcumulado < 0) xpAcumulado = 0;
+                    stats.totalCompletas = Math.max(0, stats.totalCompletas - 1);
+                    stats.sequenciaAtual = Math.max(0, stats.sequenciaAtual - 1);
+
+                    if (missao.prioridade === "Alta") stats.altaPrioridadeConcluidas = Math.max(0, stats.altaPrioridadeConcluidas - 1);
+                    else if (missao.prioridade === "Média") stats.mediaPrioridadeConcluidas = Math.max(0, stats.mediaPrioridadeConcluidas - 1);
+                    else if (missao.prioridade === "Baixa") stats.baixaPrioridadeConcluidas = Math.max(0, stats.baixaPrioridadeConcluidas - 1);
+                } else if (missao.status === "Falhada") {
+                    xpAcumulado += missao.xp;
+                    stats.totalFalhas = Math.max(0, stats.totalFalhas - 1);
+                }
+
+                lista.splice(index, 1);
+
+                localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+                localStorage.setItem(`devquest_xp_${currentUser}`, xpAcumulado);
+                salvarEstatisticasUsuario(stats);
+
+                tocarSomFalha(); 
+                atualizarHeaderXp();
+                renderizarMissoes();
+                sincronizarComANuvem();
+            }
+        }
+    }
+
+    function concluirMissao(id) {
+        inicializarAudio();
+        let lista = obterMissoesDoUsuario();
+        let xpAcumulado = obterXpDoUsuario();
+        let stats = obterEstatisticasUsuario();
+        
+        const index = lista.findIndex(m => m.id === id);
+
+        if (index !== -1) {
+            const missao = lista[index];
+            if (missao.status === "Pendente") {
+                const prazo = new Date(missao.deadline);
+                const agora = new Date();
+                const diferencaMinutos = (prazo - agora) / (1000 * 60);
+
+                if (diferencaMinutos > 0 && diferencaMinutos <= 5) {
+                    stats.clutchConclusoes += 1;
+                    if (diferencaMinutos <= 1) {
+                        stats.superClutchConclusoes += 1;
+                    }
+                }
+
+                const nivelAntes = Math.floor(xpAcumulado / 200) + 1;
+                const novoXp = xpAcumulado + missao.xp;
+                const nivelDepois = Math.floor(novoXp / 200) + 1;
+
+                missao.status = "Concluída";
+                missao.ultimaConclusao = agora.getTime(); 
+                xpAcumulado = novoXp;
+
+                stats.totalCompletas += 1;
+                stats.sequenciaAtual += 1;
+
+                if (missao.prioridade === "Alta") {
+                    stats.altaPrioridadeConcluidas += 1;
+                } else if (missao.prioridade === "Média") {
+                    stats.mediaPrioridadeConcluidas += 1;
+                } else if (missao.prioridade === "Baixa") {
+                    stats.baixaPrioridadeConcluidas += 1;
+                }
+
+                localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+                localStorage.setItem(`devquest_xp_${currentUser}`, xpAcumulado);
+                salvarEstatisticasUsuario(stats);
+
+                celebrarConclusao();
+                atualizarHeaderXp();
+
+                if (nivelDepois > nivelAntes) {
+                    tocarSomLevelUp();
+                    setTimeout(() => alert(`🎉 PARABÉNS! Você subiu para o Nível ${nivelDepois}!`), 100);
+                } else {
+                    tocarSomSucesso();
+                }
+
+                renderizarMissoes();
+                sincronizarComANuvem();
+            }
+        }
+    }
+
+    function verificarDeadlinesExpiradas() {
+        if (!currentUser) return;
+
+        let lista = obterMissoesDoUsuario();
+        let xpAcumulado = obterXpDoUsuario();
+        let stats = obterEstatisticasUsuario();
+        let alterado = false;
+
+        const agora = new Date();
+
+        lista.forEach(missao => {
+            if (missao.status === "Pendente" && missao.deadline) {
+                const prazo = new Date(missao.deadline);
+                if (agora > prazo) {
+                    missao.status = "Falhada";
+                    
+                    xpAcumulado -= missao.xp;
+                    if (xpAcumulado < 0) xpAcumulado = 0; 
+                    
+                    stats.totalFalhas += 1;
+                    stats.sequenciaAtual = 0; 
+
+                    alterado = true;
+                    
+                    tocarSomFalha();
+                    alert(`⚠️ Missão Falhada! Você estourou o prazo limite de "${missao.titulo}" e perdeu ${missao.xp} XP!`);
+                }
+            }
+        });
+
+        if (alterado) {
+            localStorage.setItem(`devquest_missoes_${currentUser}`, JSON.stringify(lista));
+            localStorage.setItem(`devquest_xp_${currentUser}`, xpAcumulado);
+            salvarEstatisticasUsuario(stats);
+            atualizarHeaderXp();
+            renderizarMissoes();
+        }
+    }
+
+    function renderizarMissoes() {
+        const listContainer = document.getElementById('quest-list');
+        listContainer.innerHTML = "";
+
+        const lista = obterMissoesDoUsuario();
+
+        if (lista.length === 0) {
+            listContainer.innerHTML = `<li style="text-align: center; color: #8b8f9e; padding: 20px;">Você não tem missões cadastradas no momento. Comece adicionando uma!</li>`;
+            return;
+        }
+
+        const criterio = document.getElementById('sort-quests').value;
+        let listaOrdenada = [...lista];
+        const prioridadePeso = { "Alta": 3, "Média": 2, "Baixa": 1 };
+
+        if (criterio === "prioridade-dec") {
+            listaOrdenada.sort((a, b) => prioridadePeso[b.prioridade] - prioridadePeso[a.prioridade]);
+        } else if (criterio === "prioridade-asc") {
+            listaOrdenada.sort((a, b) => prioridadePeso[a.prioridade] - prioridadePeso[b.prioridade]);
+        } else if (criterio === "deadline-urgente") {
+            listaOrdenada.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        } else if (criterio === "deadline-distante") {
+            listaOrdenada.sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
+        } else if (criterio === "status") {
+            const statusPeso = { "Pendente": 1, "Concluída": 2, "Falhada": 3 };
+            listaOrdenada.sort((a, b) => statusPeso[a.status] - statusPeso[b.status]);
+        }
+
+        listaOrdenada.forEach((missao) => {
+            const isCompleted = missao.status === "Concluída";
+            const isFailed = missao.status === "Falhada";
+            const isDaily = missao.tipo === "diaria";
+            const isWeekly = missao.tipo === "semanal";
+
+            const li = document.createElement('li');
+            li.className = `quest-item ${isCompleted ? 'quest-completed' : ''} ${isFailed ? 'quest-failed' : ''}`;
+
+            if (missao.id === editingQuestId) {
+                li.style.flexDirection = "column";
+                li.style.alignItems = "stretch";
+                li.style.gap = "10px";
+                li.style.borderColor = "var(--neon-cyan)";
+                li.style.boxShadow = "0 0 10px rgba(0, 245, 212, 0.2)";
+                
+                li.innerHTML = `
+                    <span style="font-size: 0.85rem; font-weight: bold; color: var(--neon-cyan); text-transform: uppercase;">✏️ Editar Missão Inline</span>
+                    <input type="text" id="edit-title-${missao.id}" value="${missao.titulo}">
+                    <div style="display: flex; gap: 10px;">
+                        <select id="edit-priority-${missao.id}" style="flex: 1;">
+                            <option value="Baixa" ${missao.prioridade === 'Baixa' ? 'selected' : ''}>Baixa (10 XP)</option>
+                            <option value="Média" ${missao.prioridade === 'Média' ? 'selected' : ''}>Média (25 XP)</option>
+                            <option value="Alta" ${missao.prioridade === 'Alta' ? 'selected' : ''}>Alta (50 XP)</option>
+                        </select>
+                        <select id="edit-type-${missao.id}" style="flex: 1;">
+                            <option value="comum" ${missao.tipo === 'comum' ? 'selected' : ''}>Quest Única</option>
+                            <option value="diaria" ${missao.tipo === 'diaria' ? 'selected' : ''}>⚡ Diária</option>
+                            <option value="semanal" ${missao.tipo === 'semanal' ? 'selected' : ''}>📅 Semanal</option>
+                        </select>
+                        <input type="datetime-local" id="edit-deadline-${missao.id}" value="${missao.deadline}" style="flex: 1;">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <button class="btn" style="padding: 10px; margin: 0; flex: 1; font-size: 0.85rem;" onclick="salvarEdicao('${missao.id}')">💾 Salvar Alterações</button>
+                        <button class="btn btn-secondary" style="padding: 10px; margin: 0; flex: 1; font-size: 0.85rem;" onclick="cancelarEdicao()">❌ Cancelar</button>
+                    </div>
+                `;
+            } else {
+                const formatadorData = new Date(missao.deadline).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+                
+                let tipoBadge = "";
+                if (isDaily) tipoBadge = `<span class="badge-type">⚡ Diária</span>`;
+                else if (isWeekly) tipoBadge = `<span class="badge-type">📅 Semanal</span>`;
+
+                li.innerHTML = `
+                    <div class="quest-info">
+                        <span class="quest-title">${missao.titulo}</span>
+                        <div class="quest-meta">
+                            <span class="badge-priority priority-${missao.prioridade.toLowerCase()}">${missao.prioridade}</span>
+                            ${tipoBadge}
+                            <span class="badge-xp">${isFailed ? '-' : '+'}${missao.xp} XP</span>
+                            <span class="quest-deadline">⏱| Limite: ${formatadorData}</span>
+                            ${isCompleted ? `<span class="badge-status-completed">${(isDaily||isWeekly) ? 'Concluída Hoje' : 'Concluída'}</span>` : ''}
+                            ${isFailed ? '<span class="badge-status-failed">Falhada (Expirada)</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        ${(!isCompleted && !isFailed) ? `
+                            <button class="btn-complete" onclick="concluirMissao('${missao.id}')">Concluir</button>
+                            <button onclick="iniciarEdicao('${missao.id}')" style="background: rgba(0, 245, 212, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Editar Missão">✏️</button>
+                        ` : ''}
+                        <button onclick="excluirMissao('${missao.id}')" style="background: rgba(255, 0, 110, 0.1); color: var(--neon-pink); border: 1px solid var(--neon-pink); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;" title="Excluir Missão">🗑️</button>
+                    </div>
+                `;
+            }
+
+            listContainer.appendChild(li);
+        });
+    }
+
+    // GERADOR DE 115 CONQUISTAS
+    function gerarBancoDeConquistas(missoesConcluidas, totalXP, stats) {
+        let conquistas = [];
+
+        for (let i = 1; i <= 50; i++) {
+            const reqMissoes = i * 10;
+            conquistas.push({
+                id: `quest-${i}`,
+                nome: `Desbravador ${conversorRomano(i)}`,
+                descricao: `Conclua com sucesso um total acumulado de ${reqMissoes} missões.`,
+                icone: i % 2 === 0 ? "🛡|" : "⚔|",
+                desbloqueado: missoesConcluidas >= reqMissoes
+            });
+        }
+
+        for (let i = 1; i <= 50; i++) {
+            const xpRequisito = i * 1000;
+            conquistas.push({
+                id: `xp-${i}`,
+                nome: `Lenda do XP ${conversorRomano(i)}`,
+                descricao: `Acumule um total de ${xpRequisito} pontos de experiência em sua carreira.`,
+                icone: i % 2 === 0 ? "🔮|" : "🧪|",
+                desbloqueado: totalXP >= xpRequisito
+            });
+        }
+
+        conquistas.push({
+            id: "safe-coder",
+            nome: "Escudo do Git",
+            descricao: "Configuração técnica inicial de segurança do repositório concluída com criptografia.",
+            icone: "💾|",
+            desbloqueado: true
+        });
+        conquistas.push({
+            id: "primeira-conquista",
+            nome: "Primeiro Passo",
+            descricao: "Conclua sua primeira missão de qualquer dificuldade.",
+            icone: "🧭|",
+            desbloqueado: missoesConcluidas >= 1
+        });
+        conquistas.push({
+            id: "inabalavel",
+            nome: "Inabalável",
+            descricao: "Mantenha uma sequência de 10 missões completadas seguidas sem nenhuma falha.",
+            icone: "🛡|",
+            desbloqueado: stats.sequenciaAtual >= 10
+        });
+        conquistas.push({
+            id: "mestre-tempo",
+            nome: "Mestre do Tempo",
+            descricao: "Conclua uma missão restando menos de 1 minuto para o prazo limite expirar!",
+            icone: "⏱|",
+            desbloqueado: stats.superClutchConclusoes >= 1
+        });
+        conquistas.push({
+            id: "especialista-implacavel",
+            nome: "Especialista Implacável",
+            descricao: "Conclua com sucesso 15 missões de prioridade 'Média' e 15 de prioridade 'Alta'.",
+            icone: "🧠|",
+            desbloqueado: (stats.mediaPrioridadeConcluidas >= 15 && stats.altaPrioridadeConcluidas >= 15)
+        });
+        conquistas.push({
+            id: "fenix-dados",
+            nome: "Fênix de Dados",
+            descricao: "Mostre resiliência: conclua 5 tarefas com sucesso após ter falhado em pelo menos 3.",
+            icone: "🔥|",
+            desbloqueado: (stats.totalFalhas >= 3 && stats.totalCompletas >= 5)
+        });
+        conquistas.push({
+            id: "complecionista-total",
+            nome: "Mestra das Vertentes",
+            descricao: "Complete exatamente 10 missões de cada nível (10 Baixas, 10 Médias e 10 Altas).",
+            icone: "👑|",
+            desbloqueado: (stats.altaPrioridadeConcluidas >= 10 && stats.mediaPrioridadeConcluidas >= 10 && stats.baixaPrioridadeConcluidas >= 10)
+        });
+        conquistas.push({
+            id: "perfeccionista",
+            nome: "Perfeccionista Absoluto",
+            descricao: "Conclua pelo menos 30 missões mantendo taxa de falha igual a 0.",
+            icone: "✨|",
+            desbloqueado: (stats.totalCompletas >= 30 && stats.totalFalhas === 0)
+        });
+        conquistas.push({
+            id: "dev-senior",
+            nome: "Dev Sênior",
+            descricao: "Alcance o Nível 10 de Experiência (Exige acumular 1800+ XP).",
+            icone: "💻|",
+            desbloqueado: (Math.floor(totalXP / 200) + 1 >= 10)
+        });
+        conquistas.push({
+            id: "espadachim-elite",
+            nome: "Lâmina de Dados",
+            descricao: "Complete 20 missões de prioridade Alta.",
+            icone: "⚔|",
+            desbloqueado: stats.altaPrioridadeConcluidas >= 20
+        });
+        conquistas.push({
+            id: "guardiã-tempo",
+            nome: "Guardiã do Tempo",
+            descricao: "Conclua com sucesso 10 missões sob pressão (com menos de 5 minutos restantes).",
+            icone: "⏳|",
+            desbloqueado: stats.clutchConclusoes >= 10
+        });
+        conquistas.push({
+            id: "maratonista",
+            nome: "Maratonista Dev",
+            descricao: "Complete 15 missões no total.",
+            icone: "🏃|",
+            desbloqueado: missoesConcluidas >= 15
+        });
+        conquistas.push({
+            id: "mestre-xp",
+            nome: "Soberana do XP",
+            descricao: "Consiga acumular o montante total de 10.000 XP.",
+            icone: "🔮|",
+            desbloqueado: totalXP >= 10000
+        });
+        conquistas.push({
+            id: "resiliencia",
+            nome: "Escudo de Platina",
+            descricao: "Conclua 50 tarefas no total.",
+            icone: "🎖|",
+            desbloqueado: missoesConcluidas >= 50
+        });
+        conquistas.push({
+            id: "lenda-viva",
+            nome: "Avatar do DevQuest",
+            descricao: "Conclua 100 tarefas no total.",
+            icone: "🌌|",
+            desbloqueado: missoesConcluidas >= 100
+        });
+
+        return conquistas;
+    }
+
+    function conversorRomano(num) {
+        const lookup = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
+        let roman = '';
+        for (let i in lookup) {
+            while (num >= lookup[i]) {
+                roman += i;
+                num -= lookup[i];
+            }
+        }
+        return roman;
+    }
+
+    function renderizarPerfil() {
+        const totalXP = obterXpDoUsuario();
+        const lista = obterMissoesDoUsuario();
+        const concluidas = lista.filter(m => m.status === "Concluída").length;
+        const stats = obterEstatisticasUsuario();
+
+        const perfilSalvo = JSON.parse(localStorage.getItem(`devquest_profile_${currentUser}`)) || {};
+        
+        document.getElementById('profile-display-name').innerText = perfilSalvo.fullname || currentUser;
+        document.getElementById('profile-display-age').innerText = perfilSalvo.age || "Não informada";
+        document.getElementById('profile-display-email').innerText = perfilSalvo.email || "Não informado";
+        document.getElementById('profile-display-course').innerText = perfilSalvo.course || "Recruta em Treinamento";
+
+        const nivelAtual = Math.floor(totalXP / 200) + 1;
+        const xpNoNivelAtual = totalXP % 200;
+        const porcentagemXP = (xpNoNivelAtual / 200) * 100; 
+
+        document.getElementById('profile-level').innerText = `Nível ${nivelAtual}`;
+        document.getElementById('profile-xp-text').innerText = `${xpNoNivelAtual} / 200 XP`;
+        document.getElementById('profile-total-xp-text').innerText = `Total: ${totalXP} XP`;
+        document.getElementById('xp-bar').style.width = `${porcentagemXP}%`;
+
+        const bancoConquistas = gerarBancoDeConquistas(concluidas, totalXP, stats);
+        const achievementsList = document.getElementById('achievements-list');
+        achievementsList.innerHTML = "";
+
+        let desbloqueadasContador = 0;
+
+        bancoConquistas.forEach(conq => {
+            const card = document.createElement('div');
+            card.className = `achievement-card ${conq.desbloqueado ? 'unlocked' : 'locked'}`;
+            card.title = `${conq.nome}: ${conq.descricao}`;
+
+            if (conq.desbloqueado) desbloqueadasContador++;
+
+            card.innerHTML = `
+                <div class="achievement-icon">${conq.icone}</div>
+                <div class="achievement-name">${conq.nome}</div>
+                <div style="font-size: 0.6rem; color: #8b8f9e;">${conq.desbloqueado ? 'Desbloqueado' : 'Bloqueado'}</div>
+            `;
+
+            achievementsList.appendChild(card);
+        });
+
+        document.getElementById('achievements-count').innerText = `${desbloqueadasContador} / ${bancoConquistas.length}`;
+    }
+</script>
+
+</body>
+</html>

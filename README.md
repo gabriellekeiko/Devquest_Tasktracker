@@ -1,4 +1,5 @@
 # DevQuest - TaskTracker Gamificado (CLI) 
+
 O **DevQuest** é um sistema de gerenciamento de tarefas gamificado projetado para otimizar a rotina de estudos e entregas técnicas. A aplicação combate a procrastinação, a sobrecarga mental e a falta de priorização ao transformar o acompanhamento de demandas em uma jornada interativa de RPG: cada tarefa cadastrada torna-se uma **Missão (Quest)** que concede Pontos de Experiência (XP) atrelados ao seu nível de prioridade. 
 --- 
 ## Problema e Solução 
@@ -29,7 +30,7 @@ plaintext devquest-tasktracker
 │   └── planejamento\_logico\_devquest.pdf # Documento de planejamento da Fase 1
 └── src
     └── main.py # Código-fonte principal da aplicação CLI em Python
-
+```
 * **Gabrielle Keiko**
 * Aluna de Ciência de Dados e Machine Learning no **CEUB**
 * Business Intelligence 2026
